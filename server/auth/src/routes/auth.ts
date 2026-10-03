@@ -1,5 +1,5 @@
 import express from "express";
-import { loginUser, registerUser } from "../controllers/auth.js";
+import { forgotPassword, loginUser, registerUser } from "../controllers/auth.js";
 import uploadFile from "../middleware/multer.js";
 
 const router = express.Router();
@@ -107,6 +107,43 @@ router.post("/register", uploadFile, registerUser);
  *         description: Missing details or invalid credentials
  */
 
-router.post("/login",loginUser)
+router.post("/login",loginUser);
+
+/**
+ * @swagger
+ * /api/auth/forgot:
+ *   post:
+ *     summary: Request a password reset
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *     responses:
+ *       200:
+ *         description: Password reset request processed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: If that email exists, we have sent a reset link
+ *       400:
+ *         description: Email is missing
+ */
+
+router.post("/forgot",forgotPassword);
 
 export default router;

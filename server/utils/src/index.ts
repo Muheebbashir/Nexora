@@ -3,7 +3,10 @@ import dotenv from 'dotenv'
 import routes from './route.js'
 import cors from 'cors'
 import {v2 as cloundinary} from 'cloudinary'
+import { startSendMailConsumer } from './consumer.js'
 dotenv.config();
+
+startSendMailConsumer();
 
 const requireEnv = (name: string): string => {
     const value = process.env[name];
