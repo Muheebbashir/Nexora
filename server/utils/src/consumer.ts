@@ -26,8 +26,8 @@ export const startSendMailConsumer=async()=>{
                         port:465,
                         secure:true,
                         auth:{
-                            user:"muheebbashir732@gmail.com",
-                            pass:"ihbtegappyavibct",
+                            user:process.env.SMTP_USER,
+                            pass:process.env.SMTP_PASS,
                         }
                     });
                     await transporter.sendMail({

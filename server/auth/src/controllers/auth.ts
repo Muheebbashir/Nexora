@@ -164,9 +164,9 @@ export const forgotPassword = TryCatch(async (req, res, next) => {
 
   const resetLink = `${process.env.Frontend_Url}/reset/${resetToken}`;
 
-  await redisCLient.set(`forgot:${email}`,resetToken,{
-    EX:900,
-  })
+  await redisCLient.set(`forgot:${email}`, resetToken, {
+    EX: 900,
+  });
 
   const message = {
     to: email,
@@ -178,5 +178,58 @@ export const forgotPassword = TryCatch(async (req, res, next) => {
 
   res.json({
     message: "if that email exists,we have sent a reset link",
+  });
+});
+
+export const resetPassword = TryCatch(async (req, res, next) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  if (typeof token !== "string" || !token) {
+    throw new ErrorHandler(400, "Invalid reset token");
+  }
+
+  let decoded: { email: string; type: string };
+
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SEC as string) as {
+      email: string;
+      type: string;
+    };
+  } catch {
+    throw new ErrorHandler(400, "Expired Token");
+  }
+
+  if (decoded.type !== "reset") {
+    throw new ErrorHandler(400, "Invalid Token Type");
+  }
+
+  const email = decoded.email;
+
+  const storedToken = await redisCLient.get(`forgot:${email}`);
+
+  if (!storedToken || storedToken !== token) {
+    throw new ErrorHandler(400, "token has been expired");
+  }
+
+  const users = await sql`SELECT user_id FROM users WHERE email =${email}`;
+
+  if (users.length === 0) {
+    throw new ErrorHandler(404, "User not found");
+  }
+  const user = users[0];
+
+  if (!user) {
+    throw new ErrorHandler(404, "User not found");
+  }
+
+  const hashPassword = await bcrypt.hash(password, 10);
+
+  await sql`UPDATE users SET password =${hashPassword} WHERE user_id = ${user.user_id}`;
+
+  await redisCLient.del(`forgot:${email}`);
+
+  res.json({
+    message: "Password changed successfully",
   });
 });

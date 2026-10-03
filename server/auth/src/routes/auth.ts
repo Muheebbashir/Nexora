@@ -1,5 +1,5 @@
 import express from "express";
-import { forgotPassword, loginUser, registerUser } from "../controllers/auth.js";
+import { forgotPassword, loginUser, registerUser, resetPassword } from "../controllers/auth.js";
 import uploadFile from "../middleware/multer.js";
 
 const router = express.Router();
@@ -145,5 +145,52 @@ router.post("/login",loginUser);
  */
 
 router.post("/forgot",forgotPassword);
+
+/**
+ * @swagger
+ * /api/auth/reset/{token}:
+ *   post:
+ *     summary: Reset a user's password
+ *     tags:
+ *       - Authentication
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Password reset token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 example: NewPassword123
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password changed successfully
+ *       400:
+ *         description: Invalid or expired reset token
+ *       404:
+ *         description: User not found
+ */
+
+router.post("/reset/:token", resetPassword);
 
 export default router;
