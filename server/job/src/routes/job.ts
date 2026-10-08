@@ -1,7 +1,7 @@
 import express from "express"
 import { isAuth } from "../middleware/auth.js";
 import uploadFile from "../middleware/multer.js";
-import { createCompany, createJob, deleteCompany, updateJob } from "../controllers/job.js";
+import { createCompany, createJob, deleteCompany, getAllActiveJobs, getAllCompany, getCompanyDetails, getSingleJob, updateJob } from "../controllers/job.js";
 
 const router=express.Router();
 
@@ -289,5 +289,180 @@ router.post("/new",isAuth,createJob);
  *         description: Job not found
  */
 router.put("/:jobId",isAuth,updateJob);
+
+/**
+ * @swagger
+ * /api/job/company/all:
+ *   get:
+ *     summary: Get all companies owned by the authenticated recruiter
+ *     tags:
+ *       - Company
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of companies owned by the authenticated recruiter
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Company'
+ *       401:
+ *         description: Missing, invalid, or expired authentication token
+ *       500:
+ *         description: Failed to retrieve companies
+ */
+router.get("/company/all",isAuth,getAllCompany);
+
+/**
+ * @swagger
+ * /api/job/company/{id}:
+ *   get:
+ *     summary: Get company details
+ *     description: Returns company details together with all jobs belonging to the company.
+ *     tags:
+ *       - Company
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the company to retrieve
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Company details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Company'
+ *                 - type: object
+ *                   properties:
+ *                     jobs:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Job'
+ *       400:
+ *         description: Company ID is required
+ *       401:
+ *         description: Missing, invalid, or expired authentication token
+ *       404:
+ *         description: Company not found
+ *       500:
+ *         description: Failed to retrieve company details
+ */
+router.get("/company/:id",isAuth,getCompanyDetails);
+
+/**
+ * @swagger
+ * /api/job/all:
+ *   get:
+ *     summary: Get all active jobs
+ *     description: Returns all active jobs, optionally filtered by title and location.
+ *     tags:
+ *       - Job
+ *     parameters:
+ *       - in: query
+ *         name: title
+ *         required: false
+ *         description: Filter jobs by title
+ *         schema:
+ *           type: string
+ *         example: Developer
+ *       - in: query
+ *         name: location
+ *         required: false
+ *         description: Filter jobs by location
+ *         schema:
+ *           type: string
+ *         example: New York
+ *     responses:
+ *       200:
+ *         description: List of active jobs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   job_id:
+ *                     type: integer
+ *                     example: 1
+ *                   title:
+ *                     type: string
+ *                     example: Senior Backend Developer
+ *                   description:
+ *                     type: string
+ *                     example: Build and maintain scalable backend services.
+ *                   salary:
+ *                     type: number
+ *                     example: 85000
+ *                   location:
+ *                     type: string
+ *                     example: New York
+ *                   job_type:
+ *                     type: string
+ *                     example: Full-time
+ *                   role:
+ *                     type: string
+ *                     example: Backend Developer
+ *                   work_location:
+ *                     type: string
+ *                     example: Remote
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                   company_name:
+ *                     type: string
+ *                     example: Nexora Technologies
+ *                   company_logo:
+ *                     type: string
+ *                     format: uri
+ *                     example: https://example.com/company-logo.png
+ *                   company_id:
+ *                     type: integer
+ *                     example: 1
+ *       500:
+ *         description: Failed to retrieve active jobs
+ */
+router.get("/all",getAllActiveJobs);
+
+/**
+ * @swagger
+ * /api/job/{jobId}:
+ *   get:
+ *     summary: Get a single job
+ *     description: Returns the job matching the supplied job ID.
+ *     tags:
+ *       - Job
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         description: The ID of the job to retrieve
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Job retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Job'
+ *       404:
+ *         description: Job not found
+ *       500:
+ *         description: Failed to retrieve the job
+ */
+router.get("/:jobId",getSingleJob);
 
 export default router;
