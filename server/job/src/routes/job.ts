@@ -1,7 +1,7 @@
 import express from "express"
 import { isAuth } from "../middleware/auth.js";
 import uploadFile from "../middleware/multer.js";
-import { createCompany, createJob, deleteCompany, getAllActiveJobs, getAllCompany, getCompanyDetails, getSingleJob, updateJob } from "../controllers/job.js";
+import { createCompany, createJob, deleteCompany, getAllActiveJobs, getAllApplicationForJob, getAllCompany, getCompanyDetails, getSingleJob, updateApplication, updateJob } from "../controllers/job.js";
 
 const router=express.Router();
 
@@ -464,5 +464,106 @@ router.get("/all",getAllActiveJobs);
  *         description: Failed to retrieve the job
  */
 router.get("/:jobId",getSingleJob);
+
+/**
+ * @swagger
+ * /api/job/application/{jobId}:
+ *   get:
+ *     summary: Get all applications for a job
+ *     description: Returns applications for a job owned by the authenticated recruiter, ordered by subscription status and application time.
+ *     tags:
+ *       - Job
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         description: The ID of the job whose applications should be returned
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         example: 12
+ *     responses:
+ *       200:
+ *         description: Applications submitted for the job
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Application'
+ *       401:
+ *         description: Missing, invalid, or expired authentication token
+ *       403:
+ *         description: The authenticated user is not a recruiter or does not own the job
+ *       404:
+ *         description: Job not found
+ *       500:
+ *         description: Failed to retrieve applications
+ */
+router.get("/application/:jobId",isAuth,getAllApplicationForJob);
+
+/**
+ * @swagger
+ * /api/job/application/update/{id}:
+ *   put:
+ *     summary: Update an application status
+ *     description: Update the status of an application belonging to a job owned by the authenticated recruiter.
+ *     tags:
+ *       - Job
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the application to update
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum:
+ *                   - Submitted
+ *                   - Rejected
+ *                   - Hired
+ *                 description: The new status for the application
+ *                 example: Hired
+ *     responses:
+ *       200:
+ *         description: Application status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Application updated
+ *                 job:
+ *                   $ref: '#/components/schemas/Job'
+ *                 application:
+ *                   $ref: '#/components/schemas/Application'
+ *       401:
+ *         description: Missing, invalid, or expired authentication token
+ *       403:
+ *         description: The authenticated user is not a recruiter or does not own the application job
+ *       404:
+ *         description: Application or associated job not found
+ *       500:
+ *         description: Failed to update the application
+ */
+router.put("/application/update/:id",isAuth,updateApplication);
 
 export default router;
