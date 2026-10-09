@@ -1,7 +1,7 @@
 import express from "express"
 import { isAuth } from "../middleware/auth.js";
 import uploadFile from "../middleware/multer.js";
-import { addSkillsToUser, deleteSkillFromUser, getUserProfile, myProfile, updateProfilePic, updateResume, updateUserProfile } from "../controllers/user.js";
+import { addSkillsToUser, applyForJob, deleteSkillFromUser, getAllApplication, getUserProfile, myProfile, updateProfilePic, updateResume, updateUserProfile } from "../controllers/user.js";
 
 const router=express.Router();
 
@@ -330,5 +330,81 @@ router.post("/skill/add",isAuth,addSkillsToUser);
  */
 router.delete("/skill/delete",isAuth,deleteSkillFromUser);
 
+/**
+ * @swagger
+ * /api/user/apply/job:
+ *   post:
+ *     summary: Apply for a job
+ *     description: Submit a job application using the authenticated jobseeker's profile resume.
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - job_id
+ *             properties:
+ *               job_id:
+ *                 type: integer
+ *                 minimum: 1
+ *                 description: The ID of the job being applied for
+ *                 example: 12
+ *     responses:
+ *       200:
+ *         description: Job application submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Applied for this job successfully
+ *                 application:
+ *                   $ref: '#/components/schemas/Application'
+ *       400:
+ *         description: Resume is missing, job ID is missing, or the job is inactive
+ *       401:
+ *         description: Missing, invalid, or expired authentication token
+ *       403:
+ *         description: The authenticated user is not a jobseeker
+ *       404:
+ *         description: Job not found
+ *       409:
+ *         description: The user has already applied to this job
+ *       500:
+ *         description: Failed to submit the job application
+ */
+router.post("/apply/job",isAuth,applyForJob);
+
+/**
+ * @swagger
+ * /api/user/application/all:
+ *   get:
+ *     summary: Get all applications submitted by the authenticated user
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: The authenticated user's job applications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Application'
+ *       401:
+ *         description: Missing, invalid, or expired authentication token
+ *       500:
+ *         description: Failed to retrieve job applications
+ */
+router.get("/application/all",isAuth,getAllApplication);
 
 export default router;

@@ -87,6 +87,57 @@ const swaggerOptions: swaggerJSDoc.Options = {
                         },
                     },
                 },
+                Application: {
+                    type: "object",
+                    properties: {
+                        application_id: {
+                            type: "integer",
+                            example: 1,
+                        },
+                        job_id: {
+                            type: "integer",
+                            example: 12,
+                        },
+                        applicant_id: {
+                            type: "integer",
+                            example: 5,
+                        },
+                        applicant_email: {
+                            type: "string",
+                            format: "email",
+                            example: "john@example.com",
+                        },
+                        status: {
+                            type: "string",
+                            example: "Submitted",
+                        },
+                        resume: {
+                            type: "string",
+                            format: "uri",
+                            example: "https://example.com/resume.pdf",
+                        },
+                        applied_at: {
+                            type: "string",
+                            format: "date-time",
+                        },
+                        subscribed: {
+                            type: "boolean",
+                            example: true,
+                        },
+                        job_title: {
+                            type: "string",
+                            example: "Senior Backend Developer",
+                        },
+                        job_salary: {
+                            type: "number",
+                            example: 85000,
+                        },
+                        job_location: {
+                            type: "string",
+                            example: "New York",
+                        },
+                    },
+                },
             },
         },
     },
