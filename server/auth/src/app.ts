@@ -3,9 +3,11 @@ import authRoutes from './routes/auth.js'
 import swaggerUi from 'swagger-ui-express'
 import swaggerSpec from "./swagger.js";
 import { connectKafka } from "./producer.js";
+import cors from "cors"
 const app=express();
 
 app.use(express.json());
+app.use(cors());
 
 connectKafka();
 

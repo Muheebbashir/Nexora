@@ -7,6 +7,9 @@ import { Popover, PopoverContent } from "./ui/popover";
 import { PopoverTrigger } from "./ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { ModeToggle } from "./mode-toggle";
+import { useAppData } from "@/context/AppContext";
+import Cookies from "js-cookie";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,9 +17,15 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
-  const isAuth = false;
+  const { isAuth, loading, user, setUser, setIsAuth } = useAppData();
 
-  const logoutHandler = () => {};
+  const logoutHandler = () => {
+    Cookies.remove("token", { path: "/" });
+    setUser(null);
+    setIsAuth(false);
+    setIsOpen(false);
+    toast.success("Logout successfully")
+  };
   return (
     <nav className="z-50 sticky top-0 bg-background/80 border-b backdrop-blur-md shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -60,52 +69,61 @@ const Navbar = () => {
           </div>
           {/* Right side actions*/}
           <div className="hidden md:flex items-center gap-3">
-            {isAuth ? (
-              <Popover>
-                <PopoverTrigger
-                  render={
-                    <button className="flex items-center gap-2 transition-opacity hover:opacity-80">
-                      <Avatar className="h-9 w-9 ring-2 ring-offset-2 ring-offset-background ring-blue-500/20 cursor-pointer hover:ring-blue-500/40 transition-all">
-                        {/*<AvatarImage src={} alt=""/>*/}
-                        <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600">
-                          M
-                        </AvatarFallback>
-                      </Avatar>
-                    </button>
-                  }
-                />
-                <PopoverContent className="w-56 p-2" align="end">
-                  <div className="px-3 py-2 mb-2 border-b">
-                    <p className="text-sm font-semibold">Muheeb</p>
-                    <p className="text-xs opacity-60 truncate">
-                      muheebbashir732@gmail.com
-                    </p>
-                  </div>
-                  <Link href={"/account"}>
-                    <Button
-                      className="w-full justify-start gap-2"
-                      variant={"ghost"}
-                    >
+            {loading ? (
+              ""
+            ) : (
+              <>
+                {!loading && isAuth ? (
+                  <Popover>
+                    <PopoverTrigger
+                      render={
+                        <button className="flex items-center gap-2 transition-opacity hover:opacity-80">
+                          <Avatar className="h-9 w-9 ring-2 ring-offset-2 ring-offset-background ring-blue-500/20 cursor-pointer hover:ring-blue-500/40 transition-all">
+                            <AvatarImage
+                              src={user ? (user.profile_pic as string) : ""}
+                              alt={user ? user.name : ""}
+                            />
+                            <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600">
+                              {user?.name?.charAt(0).toUpperCase() || "P"}
+                            </AvatarFallback>
+                          </Avatar>
+                        </button>
+                      }
+                    />
+                    <PopoverContent className="w-56 p-2" align="end">
+                      <div className="px-3 py-2 mb-2 border-b">
+                        <p className="text-sm font-semibold">{user?.name}</p>
+                        <p className="text-xs opacity-60 truncate">
+                          {user?.email}
+                        </p>
+                      </div>
+                      <Link href={"/account"}>
+                        <Button
+                          className="w-full justify-start gap-2"
+                          variant={"ghost"}
+                        >
+                          <User size={16} />
+                          My Profile
+                        </Button>
+                      </Link>
+                      <Button
+                        className="w-full justify-start gap-2 mt-1"
+                        variant={"ghost"}
+                        onClick={logoutHandler}
+                      >
+                        <LogOut size={16} /> Logout
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <Link href={"/login"}>
+                    <Button className="gap-2">
                       <User size={16} />
-                      My Profile
+                      Sign In
                     </Button>
                   </Link>
-                  <Button
-                    className="w-full justify-start gap-2 mt-1"
-                    variant={"ghost"}
-                    onClick={logoutHandler}
-                  >
-                    <LogOut size={16} /> Logout
-                  </Button>
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <Link href={"/login"}>
-                <Button className="gap-2">
-                  <User size={16} />
-                  Sign In
-                </Button>
-              </Link>
+                )}
+              </>
             )}
             <ModeToggle />
           </div>
@@ -149,7 +167,7 @@ const Navbar = () => {
             </Button>
           </Link>
 
-          <Link href={"/about"} onClick={toggleMenu}>
+          <Link href={"/account"} onClick={toggleMenu}>
             <Button
               variant={"ghost"}
               className="w-full justify-start gap-3 h-11"
@@ -158,37 +176,37 @@ const Navbar = () => {
               About
             </Button>
           </Link>
-          {isAuth ? (
+          {!loading && isAuth ? (
             <>
-             <Link href={"/about"} onClick={toggleMenu}>
-            <Button
-              variant={"ghost"}
-              className="w-full justify-start gap-3 h-11"
-            >
-              <User size={18} />
-              My Profile
-            </Button>
-          </Link>
-            <Button
-              variant={"destructive"}
-              className="w-full justify-start gap-3 h-11"
-              onClick={() => {
-                logoutHandler();
-                toggleMenu();
-              }}
-            >
-              <LogOut size={18} />
-              Logout
-            </Button>
+              <Link href={"/about"} onClick={toggleMenu}>
+                <Button
+                  variant={"ghost"}
+                  className="w-full justify-start gap-3 h-11"
+                >
+                  <User size={18} />
+                  My Profile
+                </Button>
+              </Link>
+              <Button
+                variant={"destructive"}
+                className="w-full justify-start gap-3 h-11"
+                onClick={() => {
+                  logoutHandler();
+                  toggleMenu();
+                }}
+              >
+                <LogOut size={18} />
+                Logout
+              </Button>
             </>
-          ) : (
+          ) : !loading ? (
             <Link href={"/login"} onClick={toggleMenu}>
               <Button className="w-full justify-start gap-3 h-11 mt-2">
                 <User size={18} />
                 Sign In
               </Button>
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
     </nav>
